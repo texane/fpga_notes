@@ -1,0 +1,133 @@
+\documentclass[12pt]{article}
+
+\usepackage{listings}
+
+\title{VHDL notes}
+\author{Fabien Le Mentec}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Set of practical VHDL notes and guidelines.
+\end{abstract}
+\newpage
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+\newpage
+
+
+\newpage
+\section{Reusability}
+
+\subsection{General}
+as much as possible, standalone reusable components
+
+
+\subsection{Use unconstrained types}
+use unconstrainted arrays, propagate through hierarchy
+
+
+\subsection{Use type attributes}
+use type attribute as much as possible, esp. type'length
+and type'range
+
+
+\subsection{Use generics, not package constants}
+use generics for specialization. esp, think about template
+as non modifiable by the user.
+
+
+\newpage
+\section{Simulation}
+
+\subsection{Per component test bench}
+use per component simulation test benches, not project wide.
+they are easier for the component user to understand, and
+force you to design stand alone components.
+
+
+\newpage
+\section{Synthesis}
+
+
+\subsection{Inference}
+\paragraph{}
+Usually, a VHDL developer does not explicitely indicate what
+hardware resource to use to implement logic. The synthetiser
+deduces that from its source code understanding (ie. signal
+netlist and operations). This process is known as inference.
+\paragraph{}
+Inference is very sensitive to the way code is written. For
+instance, the use of an additional signal to reset a shift
+register may prevent the synthetiser to infer a hardware
+shift register.
+\paragraph{}
+Thus, VHDL developers try as much as possible to write code
+in a standard way, that is known to be well understood by the
+synthetiser.
+
+
+\subsection{Explicit resource instanciation}
+\paragraph{}
+Non portable but sure to instanciate the right resource.
+
+
+\subsection{Reset signals}
+Avoid reset signals. If not possible, make reset clock synchronous.
+The following construct helps:
+\lstset{language=VHDL}
+\begin{lstlisting}[frame=single]
+process
+begin
+ wait until rising_edge(clk);
+
+ if rst = '1' then
+ end if;
+
+end process;
+\end{lstlisting}
+
+
+
+\subsection{Shift registers}
+\paragraph{}
+XILINX FPGAs have hardware resources to implement shift registers.
+
+
+
+\newpage
+\section{Verification}
+
+
+\subsection{Use assertions}
+use assertion to check data type lengths when unconstraints
+arrays
+
+
+\newpage
+\section{Documentation}
+
+\subsection{Test benches as documentation}
+test benches also serve as a documentation for component users
+
+
+\newpage
+\section{Misc}
+\subsection{Processes}
+
+
+\subsection{Clocking}
+clear convention about how data passed to/from a component are
+clocked. by default, clocked using the component domain. idem for
+latching.
+
+
+\subsection{Typing}
+use right types (unsigned, slv ...), sizing and indexing from the
+beginning. it avoids further casting and simplifies the code.
+
+
+\end{document}
