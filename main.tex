@@ -1,59 +1,114 @@
 \documentclass[12pt]{article}
-
 \usepackage{listings}
+\usepackage{xifthen}
 
-\title{VHDL notes}
-\author{Fabien Le Mentec}
-\date{\today}
 
 \begin{document}
+
+\newcommand{\note}[1]
+{\newpage\section{#1}}
+
+\newcommand{\topics}[1]
+{\paragraph{}\small{\textit{topics: #1}}}
+
+\newcommand{\todo}[1]
+{\paragraph{}\textbf{TODO}: #1}
+
+\lstnewenvironment{vhdl}
+{\newline\lstset{language=VHDL, frame=single}}{}
+
+
+\title{VHDL notes}
+\author{Fabien Le Mentec, fabien.lementec@gmail.com}
+\date{\today}
+
 \maketitle
 
 \begin{abstract}
-Set of practical VHDL notes and guidelines.
+Set of practical VHDL related notes and guidelines. It addresses
+topics ranging from coding conventions, verification, synthesis,
+optimisation, reusability and documentation.
 \end{abstract}
-\newpage
 
-\setcounter{tocdepth}{2}
+\newpage
+\setcounter{tocdepth}{1}
 \tableofcontents
-\newpage
 
 
-\newpage
-\section{Reusability}
+%%
+\note{Unconstrained types}
+\topics{reusability, documentation}
 
-\subsection{General}
-as much as possible, standalone reusable components
+\paragraph{}
+When not explicitly specified by the developer, a type length
+is deduced during component instantiation. This favors component
+reusability by letting the user decide of the type length
+according to its particular needs.
+
+\paragraph{}
+For instance, \textit{count} is unconstrained in the following:
+\begin{vhdl}
+component my_component
+port
+(
+ ...
+ count_val: in unsigned;
+ ...
+);
+end component;
+\end{vhdl}
+
+\paragraph{}
+One important issue with unconstraint types is that a component
+user may inadvertently use types that are larger than required,
+possibly leading to unecessary large resource instantiation.
+Documentation is a good tool to solve this kind of issue. Also,
+assertions can be used to check for degenerate cases:
+\begin{vhdl}
+component my_component
+port
+(
+ ...
+ -- WARNING
+ -- hardware comparator infered, use appropriate length
+ count_val: in unsigned;
+ ...
+);
+end component;
+\end{vhdl}
 
 
-\subsection{Use unconstrained types}
-use unconstrainted arrays, propagate through hierarchy
-
-
-\subsection{Use type attributes}
-use type attribute as much as possible, esp. type'length
+%%
+\note{Type attributes}
+\paragraph{}
+Use type attribute as much as possible, esp. type'length
 and type'range
 
 
-\subsection{Use generics, not package constants}
-use generics for specialization. esp, think about template
-as non modifiable by the user.
+%%
+\note{Generics instead of package constants}
+\topics{reusability}
+\paragraph{}
+Often, a component parameter can be set either using
+generic or package constants. Using package constants
+forces the user to modify your package. On the other
+hand, generics let the user specializes the component
+without modifying any existing source.
 
 
-\newpage
-\section{Simulation}
-
-\subsection{Per component test bench}
-use per component simulation test benches, not project wide.
-they are easier for the component user to understand, and
-force you to design stand alone components.
-
-
-\newpage
-\section{Synthesis}
+%%
+\note{Per component test benches}
+\topics{simulation}
+\paragraph{}
+Per component test benches generally requires less code than
+project wide ones. It makes them easier to maintain, and
+encourages the developer to write self contained components.
+Also, it makes simulation run faster.
 
 
-\subsection{Inference}
+%%
+\note{Hardware resource inference}
+\topics{synthesis}
 \paragraph{}
 Usually, a VHDL developer does not explicitely indicate what
 hardware resource to use to implement logic. The synthetiser
@@ -70,16 +125,72 @@ in a standard way, that is known to be well understood by the
 synthetiser.
 
 
-\subsection{Explicit resource instanciation}
+%%
+\note{Explicit resource instantiation}
+\topics{synthesis}
 \paragraph{}
 Non portable but sure to instanciate the right resource.
 
 
-\subsection{Reset signals}
-Avoid reset signals. If not possible, make reset clock synchronous.
-The following construct helps:
-\lstset{language=VHDL}
-\begin{lstlisting}[frame=single]
+%%
+\note{Reset signals}
+\paragraph{}
+Avoid reset signals. If not possible, make reset synchronous.
+\todo{explain why}
+\todo{refer to process writing note}
+
+
+%%
+\note{Shift registers inference}
+\topics{synthesis}
+\todo{wip}
+\paragraph{}
+XILINX FPGAs have hardware resources to implement shift registers.
+
+
+%%
+\note{Assertions}
+\topics{verification}
+\todo{wip}
+
+\paragraph{}
+Use assertion to check data type lengths when unconstraints
+arrays
+
+
+%%
+\note{Test benches as documentation}
+\topics{documentation}
+
+\paragraph{}
+A component developer should consider test benches an important
+part of the documentation since they are used as reference
+materials by the component user. Thus, test benches should be up
+to date, clearly written and well documented. If possible, they
+should cover different use cases, without flooding the user with
+unrequired contents.
+
+
+%%
+\note{Writing synchronous processes}
+\topics{convention}
+
+\paragraph{}
+There is one standard way of writing synchronous process:
+\begin{vhdl}
+process(clk, rst)
+begin
+ if rising_edge(clk) then
+  if rst = '1' then
+  else
+  end if;
+ end if;
+end process;
+\end{vhdl}
+
+\paragraph{}
+Another way which is synthetizable:
+\begin{vhdl}
 process
 begin
  wait until rising_edge(clk);
@@ -88,45 +199,30 @@ begin
  end if;
 
 end process;
-\end{lstlisting}
+\end{vhdl}
 
-
-
-\subsection{Shift registers}
 \paragraph{}
-XILINX FPGAs have hardware resources to implement shift registers.
+Since the \textbf{wait} statement must come first, all the signal
+are synchronous, esp. the reset. Also, this convention results in
+a somewhat clearer code.
 
 
+%%
+\note{Clocking}
 
-\newpage
-\section{Verification}
-
-
-\subsection{Use assertions}
-use assertion to check data type lengths when unconstraints
-arrays
-
-
-\newpage
-\section{Documentation}
-
-\subsection{Test benches as documentation}
-test benches also serve as a documentation for component users
-
-
-\newpage
-\section{Misc}
-\subsection{Processes}
-
-
-\subsection{Clocking}
-clear convention about how data passed to/from a component are
+\todo{wip}
+\paragraph{}
+Clear convention about how data passed to/from a component are
 clocked. by default, clocked using the component domain. idem for
 latching.
 
 
-\subsection{Typing}
-use right types (unsigned, slv ...), sizing and indexing from the
+%%
+\note{Appropriate typing}
+
+\todo{wip}
+\paragraph{}
+Use right types (unsigned, slv ...), sizing and indexing from the
 beginning. it avoids further casting and simplifies the code.
 
 
