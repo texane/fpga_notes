@@ -1,6 +1,5 @@
 \documentclass[12pt]{article}
 \usepackage{listings}
-\usepackage{xifthen}
 
 
 \begin{document}
@@ -17,10 +16,13 @@
 \lstnewenvironment{vhdl}
 {\newline\lstset{language=VHDL, frame=single}}{}
 
+\IfFileExists{version.tex}
+{\input{version.tex}}{\newcommand{\version}{none}}
 
-\title{VHDL notes}
+\title{VHDL notes\\ \small{version: \version}}
 \author{Fabien Le Mentec, fabien.lementec@gmail.com}
 \date{\today}
+
 
 \maketitle
 
