@@ -5,10 +5,13 @@
 \begin{document}
 
 \newcommand{\note}[1]
-{\newpage\section{#1}}
+{\newpage\section{#1}\label{note:#1}}
 
 \newcommand{\topics}[1]
 {\paragraph{}\small{\textit{topics: #1}}}
+
+\newcommand{\related}[1]
+{\paragraph{}\small{\textit{related notes: \ref{note:#1}}}}
 
 \newcommand{\todo}[1]
 {\paragraph{}\textbf{TODO}: #1}
@@ -19,17 +22,20 @@
 \IfFileExists{version.tex}
 {\input{version.tex}}{\newcommand{\version}{none}}
 
-\title{VHDL notes\\ \small{version: \version}}
+\title{VHDL notes}
 \author{Fabien Le Mentec, fabien.lementec@gmail.com}
-\date{\today}
+\date{\small{version: \version}}
 
 
 \maketitle
 
 \begin{abstract}
-Set of practical VHDL related notes and guidelines. It addresses
-topics ranging from coding conventions, verification, synthesis,
-optimisation, reusability and documentation.
+Set of VHDL related notes. It addresses topics ranging from coding
+conventions, verification, synthesis, optimisation, reusability
+and documentation. Some notes are vague while others are quite
+specific to tools or target platforms. Also, it addresses a wide
+audience, so some materials may seem obvious to the reader,
+depending on her background.
 \end{abstract}
 
 \newpage
@@ -39,7 +45,7 @@ optimisation, reusability and documentation.
 
 %%
 \note{Unconstrained types}
-\topics{reusability, documentation}
+\topics{reusability, documentation, verification}
 
 \paragraph{}
 When not explicitly specified by the developer, a type length
@@ -48,16 +54,30 @@ reusability by letting the user decide of the type length
 according to its particular needs.
 
 \paragraph{}
-For instance, \textit{count} is unconstrained in the following:
+For instance, \textit{count} range is unconstrained in the
+following component declaration:
 \begin{vhdl}
 component my_component
 port
 (
  ...
- count_val: in unsigned;
+ count: in unsigned;
  ...
 );
-end component;
+\end{vhdl}
+
+\paragraph{}
+The actual range is deduced during instantiation:
+\begin{vhdl}
+signal count: unsigned(7 downto 0);
+
+work.my_component
+port map
+(
+ ...
+ count => count
+ ...
+);
 \end{vhdl}
 
 \paragraph{}
@@ -72,11 +92,35 @@ port
 (
  ...
  -- WARNING
- -- hardware comparator infered, use appropriate length
- count_val: in unsigned;
+ -- hardware comparator infered in subsequent logic
+ -- use appropriate length
+ count: in unsigned;
  ...
 );
 end component;
+\end{vhdl}
+
+\paragraph{}
+If you want to make sure the length fits within a given range,
+use assertion in the component entity definition:
+\begin{vhdl}
+entity my_component
+port
+(
+ ...
+ count: in unsigned;
+ ...
+);
+end my_component;
+
+architecture my_component_rtl of my_component is
+begin
+...
+assert (count'length <= 16)
+report "invalid counter length"
+severity failure;
+...
+end my_component_rtl;
 \end{vhdl}
 
 
@@ -130,16 +174,17 @@ synthetiser.
 %%
 \note{Explicit resource instantiation}
 \topics{synthesis}
+\todo{wip}
 \paragraph{}
 Non portable but sure to instanciate the right resource.
 
 
 %%
 \note{Reset signals}
+\related{Writing synchronous processes}
 \paragraph{}
 Avoid reset signals. If not possible, make reset synchronous.
 \todo{explain why}
-\todo{refer to process writing note}
 
 
 %%
@@ -175,7 +220,7 @@ unrequired contents.
 
 %%
 \note{Writing synchronous processes}
-\topics{convention}
+\topics{synthesis}
 
 \paragraph{}
 There is one standard way of writing synchronous process:
@@ -221,11 +266,15 @@ latching.
 
 %%
 \note{Appropriate typing}
+\topics{verification, documentation}
 
-\todo{wip}
 \paragraph{}
-Use right types (unsigned, slv ...), sizing and indexing from the
-beginning. it avoids further casting and simplifies the code.
+Use the most specialized types (unsigned, boolean ...) and sizes
+early in the design hierarchy. It avoids further casting and
+simplifies the code. It acts as documentation since the reader
+deduces information from the type itself. For instance, an
+unsigned counter tells it can not be negative. Typing also
+improve static time checks.
 
 
 \end{document}
