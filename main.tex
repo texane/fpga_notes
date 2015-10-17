@@ -19,6 +19,9 @@
 \lstnewenvironment{vhdl}
 {\newline\lstset{language=VHDL, frame=single}}{}
 
+\lstnewenvironment{sh}
+{\newline\lstset{frame=single}}{}
+
 \IfFileExists{version.tex}
 {\input{version.tex}}{\newcommand{\version}{none}}
 
@@ -275,6 +278,47 @@ simplifies the code. It acts as documentation since the reader
 deduces information from the type itself. For instance, an
 unsigned counter tells it can not be negative. Typing also
 improve static time checks.
+
+
+%%
+\note{Component directory structure}
+\topics{reusability, documentation}
+
+\paragraph{}
+Having a clear, self contained directory structure is helpful
+for both the user and the developer. I opted for the following
+one, that simple but fits most of the cases:
+\begin{sh}
+my_component/
+ src/
+  my_component_pkg.vhd
+  my_component_rtl.vhd
+  ...
+ sim/
+  common/
+   main_tb.vhd
+  isim/
+   isim.tcl
+   isim.prj
+   isim.sh
+  modelsim/
+   ...
+ syn/
+  ise/
+   xc7k325t.ucf
+   xc7vx485t.ucf
+  vivado/
+   ...
+ doc/
+  my_component.pdf
+\end{sh}
+
+\paragraph{}
+Providing synthesis files allows the user to synthetise the
+component for a given platform. It should not synthetise a full
+working design, only the bare minimum so the user can check its
+toolchain (esp. version), and investigate what hardware resources
+are infered.
 
 
 \end{document}
