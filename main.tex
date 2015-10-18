@@ -1,8 +1,12 @@
 \documentclass[12pt]{article}
 \usepackage{listings}
+\usepackage{url}
 
 
 \begin{document}
+
+
+%% command definition
 
 \newcommand{\note}[1]
 {\newpage\section{#1}\label{note:#1}}
@@ -21,6 +25,15 @@
 
 \lstnewenvironment{sh}
 {\newline\lstset{frame=single}}{}
+
+\newcommand{\longurl}[2]
+{\url{#1#2}}
+
+\newcommand{\longlongurl}[3]
+{\url{#1#2#3}}
+
+
+%% document start here
 
 \IfFileExists{version.tex}
 {\input{version.tex}}{\newcommand{\version}{none}}
