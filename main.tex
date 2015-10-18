@@ -1,11 +1,13 @@
 \documentclass[12pt]{article}
 \usepackage{listings}
 \usepackage{url}
+\usepackage{comment}
 
 
 \begin{document}
 
 
+%%
 %% command definition
 
 \newcommand{\note}[1]
@@ -31,6 +33,12 @@
 
 \newcommand{\longlongurl}[3]
 {\url{#1#2#3}}
+
+%%
+%% block contents passed to latex preprocessor
+%% ignored when processed directly by latex
+%% use with \begin{texpp} \end{texpp}
+\excludecomment{texpp}
 
 
 %% document start here
