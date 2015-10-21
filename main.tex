@@ -25,6 +25,9 @@
 \lstnewenvironment{vhdl}
 {\newline\lstset{language=VHDL, frame=single}}{}
 
+\lstnewenvironment{tcl}
+{\newline\lstset{language=TCL, frame=single}}{}
+
 \lstnewenvironment{sh}
 {\newline\lstset{frame=single}}{}
 
@@ -411,6 +414,88 @@ are infered.
 \note{Variable length multiplexers}
 \topics{reusability, optimization}
 \todo{}
+
+
+%%
+\note{Modular simulation}
+\topics{reusability, simulation}
+
+\paragraph{}
+Generally, a simulation is implemented as a single monolitic file. Signals
+are commented based on what the user wants to investigate. This approach is
+unconvenient at least, especially when signals are mutually exclusive.
+\paragraph{}
+Another approach is to split the simulation into multiple scripts. A modular
+environment favors new scenario composition by aggregating existing scripts.
+Also, it makes it easier for a user toinvestigate only the signals he is
+interested in. Also, it makes the environment easier for the developper to
+maintain anad reuse.
+
+\paragraph{}
+For instance, a project implementing a generic serial link controller may use
+the following structure for an ISIM simulation:
+\begin{sh}
+generic_serial_controller/
+ ...
+ sim/
+  common/
+   main.vhd
+  isim/
+   i2c.tcl
+   spi.tcl
+   onewire.tcl
+   common.tcl
+   main.tcl
+ ...
+\end{sh}
+
+\paragraph{}
+In this example, the main file is in charge of sourcing other files
+and running the simulation:
+\pagebreak
+\begin{tcl}
+source common.tcl
+
+if { [ file exists user.tcl ] == 1 } {
+ source user.tcl
+} else {
+ source i2c.tcl
+ source spi.tcl
+ source onewire.tcl
+}
+
+run 150 us
+\end{tcl}
+
+\paragraph{}
+The file common.tcl adds the signals that will be required in any simulation.
+What signal is required is left as a decision to the developper. In this
+example, both system clock, reset and serial link clock and data are added:
+\begin{tcl}
+isim force add {/main/clk} \
+ 1 -value 0 -radix bin -time 10 ns -repeat 20 ns
+
+isim force add {/main/rst} \
+ 1 -value 0 -time 2 us
+
+wave add /main/master_clock
+wave add /main/master_data
+wave add /main/slave_data
+\end{tcl}
+
+\paragraph{}
+The other files add protocol specific signal. For instance, spi.tcl:
+\begin{tcl}
+wave add /main/master/gen_spi/master_spi/curr_state
+wave add /main/master/gen_spi/master_spi/spi_clk
+wave add /main/master/gen_spi/master_spi/spi_miso
+wave add /main/master/gen_spi/master_spi/spi_mosi
+\end{tcl}
+
+\paragraph{}
+Finally, a user specific file is included if it exists. It may contain
+whatever signal is of interest to the user. With this approach, there
+is no need for the user to modify existing files.
 
 
 \end{document}
