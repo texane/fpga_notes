@@ -53,11 +53,12 @@
 \maketitle
 
 \begin{abstract}
-Set of VHDL related notes. It addresses topics ranging from coding
-conventions, verification, synthesis, optimisation, reusability
-and documentation. Some notes are vague while others are quite
-specific to tools or target platforms. Also, it addresses a wide
-audience, so some materials may seem obvious to the reader,
+Set of VHDL related notes, written by a developper still learning
+about FPGAs in general, so any feedback welcome. It addresses topics
+ranging from coding conventions, verification, synthesis, optimisation,
+reusability and documentation. Some notes are vague while others are
+quite specific to language, tools or target platforms. Also, it addresses
+a wide audience, so some materials may seem obvious to the reader,
 depending on her background.
 \end{abstract}
 
@@ -158,11 +159,65 @@ and type'range
 \note{Generics instead of package constants}
 \topics{reusability}
 \paragraph{}
-Often, a component parameter can be set either using
-generic or package constants. Using package constants
-forces the user to modify your package. On the other
-hand, generics let the user specializes the component
-without modifying any existing source.
+Often, a component parameter can be set either using package constants
+or generics. Using package constants forces the user to modify the package
+source code, which is a bad thing considering a package should be reusable
+without any modification. On the other hand, generics let the user specializes
+the component without modifying any existing source.
+
+\paragraph{}
+In the following example, the clock frequency (CLK\_FREQ) is used by the
+component called slave. The frequency could be defined as a constant in the
+package, like this:
+\begin{vhdl}
+package abs_enc_pkg is
+...
+constant CLK_FREQ: integer := 12500000;
+...
+component slave
+port
+(
+ clk: in std_logic;
+ rst: in std_logic;
+ ...
+);
+end component;
+...
+end package abs_enc_pkg;
+\end{vhdl}
+
+\paragraph{}
+A user wanting to change CLK\_FREQ the clock frequency must change the
+abs\_enc\_pkg source file. This can be avoided by defining CLK\_FREQ as
+a component generic:
+\begin{vhdl}
+package abs_enc_pkg is
+component slave
+generic
+(
+ CLK_FREQ: integer := 12500000;
+);
+port
+(
+ clk: in std_logic;
+ rst: in std_logic;
+ ...
+);
+end component;
+...
+end package abs_enc_pkg;
+\end{vhdl}
+
+\paragraph{}
+Since the CLK\_FREQ is not globally visible, it must be propagated
+through the design hierarchy. This might be inconvenient as the generics
+lists grow larger, but a clear advantage for reusability.
+
+\todo
+{
+ Global variables may be used to solve this issue,
+ but I do not think their use is encouraged.
+}
 
 
 %%
