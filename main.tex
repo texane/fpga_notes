@@ -419,6 +419,7 @@ are infered.
 %%
 \note{Modular simulation}
 \topics{reusability, simulation}
+\todo{add composed simulation scenarios}
 
 \paragraph{}
 Generally, a simulation is implemented as a single monolitic file. Signals
@@ -496,6 +497,14 @@ wave add /main/master/gen_spi/master_spi/spi_mosi
 Finally, a user specific file is included if it exists. It may contain
 whatever signal is of interest to the user. With this approach, there
 is no need for the user to modify existing files.
+
+
+%%
+\note{Include physics in simulations}
+\topics{simulation}
+\todo{signal propagation delays due to cable length}
+\todo{noise sources, debouncers}
+
 
 
 \end{document}
