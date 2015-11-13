@@ -150,6 +150,28 @@ severity failure;
 end my_component_rtl;
 \end{vhdl}
 
+\paragraph{}
+Also, avoid using the \textit{others} clause to affect unconstrained
+array elements. Some tools will complain (ModelSim vcom). An alternative
+is to use the \textit{range} attribute:
+\begin{vhdl}
+entity my_component
+port
+(
+ ...
+ count: in unsigned;
+ ...
+);
+end my_component;
+
+architecture my_component_rtl of my_component is
+begin
+...
+count <= (count'range => '0');
+...
+end my_component_rtl;
+\end{vhdl}
+
 
 %%
 \note{Type attributes}
@@ -507,7 +529,6 @@ is no need for the user to modify existing files.
 \topics{simulation}
 \todo{signal propagation delays due to cable length}
 \todo{noise sources, debouncers}
-
 
 
 \end{document}
